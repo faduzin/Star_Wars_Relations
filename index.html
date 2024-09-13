@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Star Wars Character Finder</title>
+	<style>
+		
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #1a1a1a;
+			color: #fff;
+			text-align: center;
+			padding: 20px;
+			background-image: url('https://blog.zoombackground.io/wp-content/uploads/2020/05/Darth-Vader-Wallpaper-PC.jpg');
+			background-size: cover;
+			background-repeat: no-repeat;
+			background-attachment: fixed;
+		}
+		h1 {
+			color: #ffe81f;
+		}
+		input[type="text"], input[type="number"], button, input[type="submit"], select {
+			padding: 10px;
+			width: auto;
+			margin: 10px 5px;
+			border-radius: 5px;
+			border: 1px solid #ffe81f;
+			margin-bottom: 20px;
+			font-size: 16px;
+		}
+		button {
+			padding: 12px;
+			border-radius: 5px;
+			border: none;
+			background-color: #ffe81f;
+			color: #1a1a1a;
+			font-size: 16px;
+			cursor: pointer;
+		}
+		button:hover {
+			background-color: #ffd700;
+		}
+		.tabs {
+			display: flex;
+			justify-content: center;
+			background-color: none;
+			border-radius: 10px 10px 0 0; /* Cantos arredondados no topo */
+			overflow: hidden;
+			margin: 20px auto;
+			width: fit-content;
+		}
+
+		.tab {
+			background-color: rgba(50, 50, 50, 0.9);
+			color: #fff;
+			border: none;
+			outline: none;
+			cursor: pointer;
+			margin: 7px;
+			padding: 18px;
+			transition: 0.3s;
+			border-radius: 10px; /* Cantos arredondados no topo */
+		}
+
+		.tab:not(:last-child) {
+			border-right: 1px solid #555;
+		}
+
+		.tab:hover, .tab.active {
+			background-color: #575757;
+		}
+
+		.tab-content {
+			display: none;
+			padding: 20px;
+			background-color: rgba(50, 50, 50, 0.7);
+			border-radius: 20px;
+			text-align: left;
+			max-width: 1200px;
+			margin: 20px auto;
+		}
+
+		.tab-content h2 {
+			color: #ffe81f;
+		}
+
+		.tab-content p {
+			margin: 5px 0;
+			padding: 10px 0;
+		}
+	</style>
+</head>
+<body>
+	<!-- <h1>Star Wars Character Finder</h1> -->
+	<img src="https://logodownload.org/wp-content/uploads/2015/12/star-wars-logo-3-1.png" alt="Star Wars Logo - Yellow" style="width: 300px; margin-bottom: 20px;">
+
+	<div class="tabs">
+		<button class="tab active" onclick="openTab(event, 'searchCharacter')">Buscar Personagem</button>
+		<button class="tab" onclick="openTab(event, 'findConnection')">Procurar Conexão</button>
+		<button class="tab" onclick="openTab(event, 'addCharacter')">Adicionar Personagem</button>
+		<button class="tab" onclick="openTab(event, 'addRelation')">Adicionar Relacionamento</button>
+		<button class="tab" onclick="openTab(event, 'addLiving')">Adicionar Moradia</button>
+		<button class="tab" onclick="openTab(event, 'addOwning')">Adicionar Posse</button>
+	</div>
+
+	<div id="searchCharacter" class="tab-content">
+		<h2>Buscar Personagem</h2>
+		<input type="text" id="characterName" placeholder="Nome do Personagem">
+		<button onclick="searchCharacter()">Buscar Personagem</button>
+		
+		<div id="characterDetails" class="character-details" style="display: none;">
+			<h2 id="name"></h2>
+			<p><strong>Planeta de Origem:</strong> <span id="homeworld"></span></p>
+			<p><strong>Afiliação:</strong> <span id="affiliations"></span></p>
+			<p><strong>Mestre de:</strong> <span id="masterOf"></span></p>
+			<p><strong>Treinado por:</strong> <span id="trainedBy"></span></p>
+			<p><strong>Parentes:</strong> <span id="relatives"></span></p>
+			<p><strong>Morou em:</strong> <span id="livedIn"></span></p>
+			<p><strong>Items:</strong> <span id="items"></span></p>
+		</div>
+	</div>
+
+	<div id="findConnection" class="tab-content">
+		<h2>Procurar Conexão</h2>
+		<p>Encontre a conexão entre dois personagens</p>
+		<p>Exemplo: Luke Skywalker e Darth Vader estão conectados por "pai de"</p>
+		<p>Exemplo: Luke Skywalker e Obi-Wan Kenobi estão conectados por "treinado por"</p>
+		<select id="character1" class="Characters" placeholder="Primeiro Personagem">
+		</select>
+		<select id="character2" class="Characters" placeholder="Segundo Personagem">
+		</select>
+		<!-- <input type="text" id="character1" placeholder="Enter first character name">
+		<input type="text" id="character2" placeholder="Enter second character name"> -->
+		<button onclick="findConnection()">Procurar Conexão</button>
+		
+		<div id="connectionDetails" class="connection-details" style="display: none;">
+			<h2>Conexão entre <span id="character1Name"></span> e <span id="character2Name"></span></h2>
+			<div id="connectionResult"></div>
+		</div>
+	</div>
+
+	<div id="addCharacter" class="tab-content">
+		<h2>Adicionar Personagem</h2>
+		<input type="text" id="newCharacterName" placeholder="Nome do Personagem">
+		<input type="text" id="newCharacterHomeworld" placeholder="Planeta Natal">
+		<button onclick="addCharacter()">Adicionar Personagem</button>
+		<div id="characterAddedStatus" style="display: none;">
+			<p>Carregando...</p>
+		</div>
+	</div>
+
+	<div id="addRelation" class="tab-content">
+		<h2>Adicionar Relacionamento</h2>
+		<p>Selecione um relacionamento entre dois personagens</p>
+		<select id="relCharacter1" class="Characters" placeholder="Primeiro Personagem">
+			<option value="">Nenhum Personagem</option>
+		</select>
+		<!-- <input type="text" id="relCharacter1" placeholder="First Character"> -->
+		<select id="relationType">
+			<option value="AFFILIATED_WITH">Afiliado a</option>
+			<option value="RELATIVE_OF">Parente de</option>
+			<option value="SIBLING_OF">Irmão de</option>
+			<option value="SPOUSE_OF">Cônjuge de</option>
+			<option value="FRIEND_OF">Amigo de</option>
+			<option value="ENEMY_OF">Inimigo de</option>
+			<option value="MASTER_OF">Mestre de</option>
+			<option value="TRAINED_BY">Aprendiz de</option>
+		</select>
+		<select id="relCharacter2" class="Characters" placeholder="Segundo Personagem">
+			<option value="">Nenhum Personagem</option>
+		</select>
+		<!-- <input type="text" id="relCharacter2" placeholder="Second Character"> -->
+		<button onclick="addRelation()">Adicionar relacionamento</button>
+		<div id="relationAddedStatus" style="display: none;">
+			<p>Carregando...</p>
+		</div>
+	</div>
+
+	<div id="addLiving" class="tab-content">
+		<h2>Adicionar Moradia</h2>
+		<p>Selecione um personagem e um lugar</p>
+		<select id="characterLiviging" class="Characters" placeholder="Personagem">
+		</select>
+		<select id="place" class="Places" placeholder="Lugar">
+			<option value="">Nenhum Planeta</option>
+		</select>
+		<button onclick="addLiving()">Adicionar Moradia</button>
+		<div id="livingOwningAddedStatus" style="display: none;">
+			<p>Carregando...</p>
+		</div>
+	</div>
+
+	<div id="addOwning" class="tab-content">
+		<h2>Adicionar Posse</h2>
+		<p>Selecione um personagem e um item</p>
+		<select id="characterOwning" class="Characters" placeholder="Personagem">
+		</select>
+		<select id="item" class="Items" placeholder="Item">
+			<option value="">Nenhum Item</option>
+		</select>
+		<button onclick="addOwning()">Adicionar Posse</button>
+		<div id="owningAddedStatus" style="display: none;">
+			<p>Carregando...</p>
+		</div>
+	</div>
+
+	<script src="https://unpkg.com/neo4j-driver"></script>
+	<script>
+		const relationShipFix = {
+			'AFFILIATED_WITH': 'afiliado a',
+			'TRAINED_BY': 'treinado por',
+			'RELATIVE_OF': 'parente de',
+			'LIVED_IN': 'morou em',
+			'OWNS': 'possui',
+			'SIBLING_OF': 'irmão de',
+			'SPOUSE_OF': 'cônjuge de',
+			'FRIEND_OF': 'amigo de',
+			'ENEMY_OF': 'inimigo de',
+			'MASTER_OF': 'mestre de',
+			'APPRENTICE_OF': 'aprendiz de',
+			'SERVED_UNDER': 'serviu sob',
+			'SERVED': 'serviu',
+			'KILLED': 'matou',
+			'KILLED_BY': 'foi morto por',
+			'CAPTURED_BY': 'foi capturado por'
+		};
+		var session;
+		try {
+			const driver = neo4j.driver('bolt://localhost:7687', neo4j.auth.basic('neo4j', '12121212'));
+			session = driver.session();
+		} catch (error) {
+			console.error('Error connecting to Neo4j:', error);
+			document.getElementsByClassName('Characters').forEach(element => {
+				element.disabled = true;
+				element.placeholder = 'Error connecting to Neo4j';
+			});
+			alert('Error connecting to Neo4j. Please try again later.');
+		}
+
+		function addExistingCharacter(characterName) {
+			const option = document.createElement('option');
+			option.value = characterName;
+			option.textContent = characterName;
+			document.getElementById('character1').appendChild(option);
+			document.getElementById('character2').appendChild(option.cloneNode(true));
+			document.getElementById('relCharacter1').appendChild(option.cloneNode(true));
+			document.getElementById('relCharacter2').appendChild(option.cloneNode(true));
+			document.getElementById('characterLiviging').appendChild(option.cloneNode(true));
+			document.getElementById('characterOwning').appendChild(option.cloneNode(true));
+		}
+
+		async function init() {
+			await session.run(
+				`MATCH (c:Character)
+					RETURN c.name AS name
+					ORDER BY c.name`
+			).then(result => {
+				result.records.forEach(record => {
+					addExistingCharacter(record.get('name'));
+				});
+			}).catch(error => {
+				console.error('Error fetching characters:', error);
+				document.getElementsByClassName('Characters').forEach(element => {
+					element.disabled = true;
+					element.placeholder = 'Error fetching characters';
+				});
+			});
+			await session.run(
+				`MATCH (p:Place)
+					RETURN p.name AS name
+					ORDER BY p.name`
+			).then(result => {
+				result.records.forEach(record => {
+					const option = document.createElement('option');
+					option.value = record.get('name');
+					option.textContent = record.get('name');
+					document.getElementById('place').appendChild(option);
+				});
+			}).catch(error => {
+				console.error('Error fetching places:', error);
+				document.getElementById('place').disabled = true;
+				document.getElementById('place').placeholder = 'Error fetching places';
+			});
+			await session.run(
+				`MATCH (i:Item)
+					RETURN i.name AS name
+					ORDER BY i.name`
+			).then(result => {
+				result.records.forEach(record => {
+					const option = document.createElement('option');
+					option.value = record.get('name');
+					option.textContent = record.get('name');
+					document.getElementById('item').appendChild(option);
+				});
+			}).catch(error => {
+				console.error('Error fetching items:', error);
+				document.getElementById('item').disabled = true;
+				document.getElementById('item').placeholder = 'Error fetching items';
+			});
+		}
+		init();
+
+		function openTab(evt, tabName) {
+			var i, tabcontent, tablinks;
+			tabcontent = document.getElementsByClassName("tab-content");
+			for (i = 0; i < tabcontent.length; i++) {
+				tabcontent[i].style.display = "none";
+			}
+			tablinks = document.getElementsByClassName("tab");
+			for (i = 0; i < tablinks.length; i++) {
+				tablinks[i].className = tablinks[i].className.replace(" active", "");
+			}
+			document.getElementById(tabName).style.display = "block";
+			evt.currentTarget.className += " active";
+		}
+
+		async function searchCharacter() {
+			const characterName = document.getElementById('characterName').value.trim();
+			document.getElementById('characterDetails').style.display = 'none';
+			if (characterName === '') return;
+
+			await session.run(
+				`MATCH (c:Character {name: $name})
+					OPTIONAL MATCH (c)-[:AFFILIATED_WITH]->(a:Affiliation)
+					OPTIONAL MATCH (c)-[:TRAINED_BY]->(t:Character)
+					OPTIONAL MATCH (c)-[:MASTER_OF]->(m:Character)
+					OPTIONAL MATCH (c)-[:RELATIVE_OF]->(r:Character)
+					OPTIONAL MATCH (c)-[:LIVED_IN]->(p:Place)
+					OPTIONAL MATCH (c)-[:OWNS]->(i:Item)
+					RETURN c.name AS name, c.homeworld AS homeworld, collect(DISTINCT a.name) AS affiliations,
+						collect(DISTINCT t.name) AS trainedBy, collect(DISTINCT r.name) AS relatives,
+						collect(DISTINCT p.name) AS livedIn, collect(DISTINCT i.name) AS items, collect(DISTINCT m.name) AS masterOf`,
+				{ name: characterName }
+			).then(result => {
+				const record = result.records[0];
+				if (record) {
+					document.getElementById('name').textContent = record.get('name');
+					document.getElementById('homeworld').textContent = record.get('homeworld') || 'Desconhecido';
+					document.getElementById('affiliations').textContent = record.get('affiliations').join(', ') || 'N/A';
+					document.getElementById('masterOf').textContent = record.get('masterOf').join(', ') || 'N/A';
+					document.getElementById('trainedBy').textContent = record.get('trainedBy').join(', ') || 'N/A';
+					document.getElementById('relatives').textContent = record.get('relatives').join(', ') || 'N/A';
+					document.getElementById('livedIn').textContent = record.get('livedIn').join(', ') || 'Desconhecido';
+					document.getElementById('items').textContent = record.get('items').join(', ') || 'N/A';
+					document.getElementById('characterDetails').style.display = 'block';
+
+					document.getElementById('characterDetails').scrollIntoView();
+				} else {
+					alert('Character not found!');
+				}
+				document.getElementById('characterName').value = '';
+			}).catch(error => {
+				console.error('Error fetching character:', error);
+			});
+		}
+		document.getElementById('characterName').addEventListener('keyup', function(event) {
+			// if Enter key is pressed
+			if (event.keyCode === 13) {
+				searchCharacter();
+			}
+		});
+
+		async function findConnection() {
+			const character1 = document.getElementById('character1').value.trim();
+			const character2 = document.getElementById('character2').value.trim();
+			document.getElementById('connectionDetails').style.display = 'block';
+			document.getElementById('connectionResult').innerHTML = '<p>Carregando...</p>';
+
+			document.getElementById('character1Name').textContent = character1;
+			document.getElementById('character2Name').textContent = character2;
+
+			if (character1 === '' || character2 === '') return;
+			if (character1 === character2) {
+				document.getElementById('connectionResult').innerHTML = '<p>Erro: Conexão entre mesmo personagem</p>';
+				return;
+			}
+
+			await session.run(
+				`MATCH p=shortestPath(
+					(c1:Character)-[*]-(c2:Character)
+				)
+				WHERE toLower(c1.name) CONTAINS toLower($character1) AND toLower(c2.name) CONTAINS toLower($character2)
+				RETURN p`,
+				{ character1: character1, character2: character2 }
+			).then(result => {
+				const record = result.records[0];
+				if (record) {
+					document.getElementById('connectionResult').innerHTML = '';
+					const path = record.get('p');
+					path.segments.forEach(segment => {
+						var start = segment.start.properties.name;
+						var end = segment.end.properties.name;
+						var relationship = segment.relationship.type;
+						console.log(segment);
+
+						relationship = relationShipFix[relationship] || relationship;
+
+						var newElement = document.createElement('p');
+
+						newElement.innerHTML = `${start} &lArr;[${relationship}]&rArr; ${end}`;
+						console.log(newElement);
+						document.getElementById('connectionResult').appendChild(newElement);
+					});
+					if (path.segments.length === 0) {
+						document.getElementById('connectionResult').innerHTML = '<p>Sem conexão encontrada entre os personagens!</p>';
+					} else {
+						document.getElementById('connectionResult').style.display = 'block';
+					}
+				} else {
+					document.getElementById('connectionResult').innerHTML = '<p>Sem conexão encontrada entre os personagens!</p>';
+				}
+			}).catch(error => {
+				console.error('Error finding connection:', error);
+			});
+		}
+
+		async function addCharacter() {
+			const newName = document.getElementById('newCharacterName').value.trim();
+			const newHomeworld = document.getElementById('newCharacterHomeworld').value.trim();
+			document.getElementById('characterAddedStatus').style.display = 'block';
+			document.getElementById('characterAddedStatus').textContent = 'Carregando...';
+			if (newName === '' || newHomeworld === '') return;
+
+			await session.run(
+				`CREATE (c:Character {name: $name, homeworld: $homeworld})
+					RETURN c`,
+				{ name: newName, homeworld: newHomeworld }
+			).then(result => {
+				const record = result.records[0];
+				if (record) {
+					document.getElementById('characterAddedStatus').innerHTML = '';
+
+					addExistingCharacter(newName);
+
+					document.getElementById('characterAddedStatus').style.display = 'block';
+					let newElement = document.createElement('p');
+					newElement.innerHTML = `Personagem ${newName} adicionado com sucesso!`;
+					document.getElementById('characterAddedStatus').appendChild(newElement);
+				}
+			}).catch(error => {
+				console.error('Error adding character:', error);
+			});
+
+			// Adicionando o planeta de origem do personagem se ele não existir
+			await session.run(
+				`MERGE (p:Place {name: $name})
+					RETURN p`,
+				{ name: newHomeworld }
+			).then(result => {
+				const record = result.records[0];
+				if (record) {
+					let newElement = document.createElement('p');
+					newElement.innerHTML = `Planeta ${newHomeworld} não existia, adicionado com sucesso!`;
+					document.getElementById('characterAddedStatus').appendChild(newElement);
+
+					document.getElementById('characterAddedStatus').scrollIntoView();
+
+					let newPlanetOption = document.createElement('option');
+					newPlanetOption.value = newHomeworld;
+					newPlanetOption.textContent = newHomeworld;
+					document.getElementById('place').appendChild(newPlanetOption);
+				}
+			}).catch(error => {
+				console.error('Error adding place:', error);
+			});
+			
+
+			document.getElementById('newCharacterName').value = '';
+			document.getElementById('newCharacterHomeworld').value = '';
+		}
+
+		async function addRelation() {
+			const character1 = document.getElementById('relCharacter1').value.trim();
+			const character2 = document.getElementById('relCharacter2').value.trim();
+			const relationType = document.getElementById('relationType').value;
+
+			document.getElementById('relationAddedStatus').style.display = 'block';
+			document.getElementById('relationAddedStatus').textContent = 'Carregando...';
+
+			if (character1 === '' || character2 === '' || relationType === '') return;
+			if (character1 === character2) {
+				document.getElementById('relationAddedStatus').textContent = 'Erro: Relacionamento entre mesmo personagem';
+				return;
+			}
+
+			await session.run(
+				`MATCH (c1:Character {name: $character1}), (c2:Character {name: $character2})
+					CREATE (c1)-[r:${relationType}]->(c2)
+					RETURN c1, r, c2`,
+				{ character1: character1, character2: character2 }
+			).then(result => {
+				const record = result.records[0];
+				if (record) {
+					document.getElementById('relationAddedStatus').textContent = 'Relacionamento adicionado com sucesso!';
+				} else {
+					document.getElementById('relationAddedStatus').textContent = 'Erro ao adicionar relacionamento!';
+				}
+			}).catch(error => {
+				console.error('Error adding relation:', error);
+			});
+
+			if (relationType === 'MASTER_OF') {
+				await session.run(
+					`MATCH (c1:Character {name: $character1}), (c2:Character {name: $character2})
+						CREATE (c2)-[:TRAINED_BY]->(c1)
+						RETURN c1, c2`,
+					{ character1: character1, character2: character2 }
+				).then(result => {
+					const record = result.records[0];
+					if (record) {
+						document.getElementById('relationAddedStatus').textContent = 'Relacionamento adicionado com sucesso!';
+					} else {
+						document.getElementById('relationAddedStatus').textContent = 'Erro ao adicionar relacionamento!';
+					}
+				}).catch(error => {
+					console.error('Error adding relation:', error);
+				});
+			} else if (relationType === 'TRAINED_BY') {
+				await session.run(
+					`MATCH (c1:Character {name: $character1}), (c2:Character {name: $character2})
+						CREATE (c2)-[:MASTER_OF]->(c1)
+						RETURN c1, c2`,
+					{ character1: character1, character2: character2 }
+				).then(result => {
+					const record = result.records[0];
+					if (record) {
+						document.getElementById('relationAddedStatus').textContent = 'Relacionamento adicionado com sucesso!';
+					} else {
+						document.getElementById('relationAddedStatus').textContent = 'Erro ao adicionar relacionamento!';
+					}
+				}).catch(error => {
+					console.error('Error adding relation:', error);
+				});
+			}
+		}
+
+		// Initialize the first tab to be open
+		document.addEventListener("DOMContentLoaded", function() {
+			document.querySelector(".tab").click(); // Automatically click the first tab
+		});
+
+		function addLiving() {
+			const character = document.getElementById('characterLiviging').value.trim();
+			const place = document.getElementById('place').value.trim();
+			const item = document.getElementById('item').value.trim();
+
+			document.getElementById('livingOwningAddedStatus').style.display = 'block';
+			document.getElementById('livingOwningAddedStatus').textContent = 'Carregando...';
+
+			if (character === '' || place === '') return;
+
+			session.run(
+				`MATCH (c:Character {name: $character}), (p:Place {name: $place})
+					CREATE (c)-[:LIVED_IN]->(p)
+					RETURN c, p`,
+				{ character: character, place: place }
+			).then(result => {
+				const record = result.records[0];
+
+				document.getElementById('livingOwningAddedStatus').innerHTML = '';
+
+				var newElement = document.createElement('p');
+
+				if (record) {
+					newElement.innerHTML = `${character} morou em ${place}`;
+				} else {
+					newElement.textContent = 'Erro ao adicionar moradia!';
+				}
+				document.getElementById('livingOwningAddedStatus').appendChild(newElement);
+
+				document.getElementById('livingOwningAddedStatus').scrollIntoView();
+
+				document.getElementById('characterLiviging').value = '';
+				document.getElementById('place').value = '';
+			}).catch(error => {
+				console.error('Error adding living:', error);
+				document.getElementById('livingOwningAddedStatus').textContent = 'Erro ao adicionar moradia!';
+			});
+		}
+
+		function addOwning() {
+			const character = document.getElementById('characterOwning').value.trim();
+			const item = document.getElementById('item').value.trim();
+			if (character === '' || item === '') return;
+
+			session.run(
+				`MATCH (c:Character {name: $character}), (i:Item {name: $item})
+					CREATE (c)-[:OWNS]->(i)
+					RETURN c, i`,
+				{ character: character, item: item }
+			).then(result => {
+				const record = result.records[0];
+
+				document.getElementById('owningAddedStatus').innerHTML = '';
+
+				var newElement = document.createElement('p');
+
+				if (record) {
+					newElement.innerHTML = `${character} possui ${item}`;
+				} else {
+					newElement.textContent = 'Erro ao adicionar posse!';
+				}
+			}).catch(error => {
+				console.error('Error adding owning:', error);
+				document.getElementById('livingOwningAddedStatus').textContent = 'Erro ao adicionar posse!';
+			});
+			document.getElementById('owningAddedStatus').appendChild(newElement);
+		}
+	</script>
+</body>
+</html>
